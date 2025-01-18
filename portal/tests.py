@@ -3,6 +3,7 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
 from django.contrib.auth.models import User
+from time import sleep
 
 class LoginAPITest(TestCase):
     def setUp(self):
@@ -15,7 +16,6 @@ class LoginAPITest(TestCase):
     def test_login_success(self):
         response = self.client.post(self.login_url, {'username': self.username, 'password': self.password})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        print(response.data)
         self.assertIn('access', response.data)
         self.assertIn('refresh', response.data)
 
@@ -24,3 +24,28 @@ class LoginAPITest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertNotIn('access', response.data)
         self.assertNotIn('refresh', response.data)
+
+class TokenExpirationTest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(username='testuser', password='testpassword')
+        self.login_url = reverse('login')
+        self.protected_url = reverse('protected-endpoint')
+
+    def test_access_token_expiration(self):
+        response = self.client.post(self.login_url, {'username': 'testuser', 'password': 'testpassword'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        access_token = response.data['access']
+        sleep(15)
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + access_token)
+        response = self.client.get(self.protected_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+class ProtectedEndpointTest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.protected_url = reverse('protected-endpoint')
+
+    def test_protected_endpoint_without_login(self):
+        response = self.client.get(self.protected_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
