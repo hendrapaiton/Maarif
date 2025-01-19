@@ -1,14 +1,27 @@
-function App() {
-  return (
-    <>
-      <main className="flex justify-center items-center h-screen">
-        <h1 className="text-3xl font-bold underline">
-          <i className="bi bi-heart-fill text-red-500 me-3"></i>
-          <span>Halu Dunia</span>
-        </h1>
-      </main>
-    </>
-  );
-}
+import React, { useState } from 'react';
+import Index from './components/Index';
+import Login from './components/Login';
+
+const App: React.FC = () => {
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!localStorage.getItem('access'));
+
+    const handleLogin = () => {
+        setIsAuthenticated(true);
+    };
+
+    const handleLogout = () => {
+        setIsAuthenticated(false);
+    };
+
+    return (
+        <div>
+            {isAuthenticated ? (
+                <Index onLogout={handleLogout} />
+            ) : (
+                <Login onLogin={handleLogin} />
+            )}
+        </div>
+    );
+};
 
 export default App;
