@@ -1,9 +1,8 @@
 from django.urls import path
-from portal.views import ProtectedEndpointView
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from portal.views import CookieTokenObtainPairView, CookieTokenRefreshView, ProtectedEndpointView
 
 urlpatterns = [
-    path('api/token/', TokenObtainPairView.as_view(), name='access_token'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='refresh_token'),
+    path('api/token/', CookieTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', CookieTokenRefreshView.as_view(), name='token_refresh'),
     path('api/protected-endpoint/', ProtectedEndpointView.as_view(), name='protected-endpoint'),
 ]
